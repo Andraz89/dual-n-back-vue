@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from "vue";
 import Square from "./components/Square.vue";
 import Controls from "./components/Controls.vue";
+import EndingStats from "./components/EndingStats.vue";
 
 let id = 0;
 let gameProgression = ref(-1);
@@ -141,18 +142,18 @@ function startGame(e) {
     let currentN = activate.value[gameProgression.value];
     squareShowingHiding(currentN);
     gameSound(currentN);
-
+    console.log(activate);
     count.value++;
   }, 3000);
 }
 
-function positionCheck() {
+/*function positionCheck() {
   activate.value[gameProgression.value].posCorrect = true;
 }
 
 function soundCheck() {
   activate.value[gameProgression.value].soundCorrect = true;
-}
+}*/
 
 function gameSound(currentN) {
   let speech = new SpeechSynthesisUtterance();
@@ -204,6 +205,14 @@ function closeFinishPopup() {
   document.querySelector(".playButton").removeAttribute("disabled");
   count.value = 0;
 }
+
+function writeAnswer(btn) {
+  if (btn == "P") {
+    activate.value[gameProgression.value].posCorrect = true;
+  } else if (btn == "S") {
+    activate.value[gameProgression.value].soundCorrect = true;
+  }
+}
 </script>
 
 <template>
@@ -235,28 +244,21 @@ function closeFinishPopup() {
         <div class="grid">
           <Square v-for="square in squares" :id="`square-${square.id}`" />
         </div>
-        <div className="game-controls">
-          <div class="play-buttons">
-            <button @click="positionCheck()">P</button>
-            <button @click="soundCheck()">S</button>
-          </div>
-
-          <button className="playButton" @click="startGame($event)">
-            Start Game
-          </button>
-        </div>
-        <!--<Controls />-->
+        <Controls
+          :activeObject="activate"
+          :gameProgression="gameProgression"
+          :startFunction="startGame"
+          @answer="writeAnswer"
+        />
       </div>
-      <div class="finish-popup">
-        <div class="text-inside">
-          <div @click="closeFinishPopup()">X</div>
-          <p>Correct Location: {{ correctPosition }}</p>
-          <p>incorrect Location: {{ incorrectPosition }}</p>
-          <p>Correct Sound: {{ correctSound }}</p>
-          <p>incorrect Sound: {{ incorrectSound }}</p>
-          <p>Selected nBack: {{ nBack.value }}</p>
-        </div>
-      </div>
+      <EndingStats
+        :correctPosition="correctPosition"
+        :incorrectPosition="incorrectPosition"
+        :correctSound="correctSound"
+        :incorrectSound="incorrectSound"
+        :nBack="nBack"
+        :closeFinishPopup="closeFinishPopup"
+      />
     </div>
   </main>
 </template>

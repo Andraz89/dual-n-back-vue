@@ -1,26 +1,16 @@
 <script setup>
-defineProps({
-  activeObject: Object,
-  gameProgression: Number,
+const props = defineProps({
+  startFunction: Function,
 });
-
-function positionCheck(props) {
-  console.log(props);
-  //activeObject.value[gameProgression.value].posCorrect = true;
-}
-
-function soundCheck() {
-  //activeObject.value[gameProgression.value].soundCorrect = true;
-}
 </script>
 
 <template>
   <div className="game-controls">
     <div class="play-buttons">
-      <button @click="positionCheck()">P</button>
-      <button @click="soundCheck()">S</button>
+      <button @click="$emit('answer', 'P')">P</button>
+      <button @click="$emit('answer', 'S')">S</button>
     </div>
-    <button className="playButton" @click="startGame($event)">
+    <button className="playButton" @click="props.startFunction($event)">
       Start Game
     </button>
   </div>
