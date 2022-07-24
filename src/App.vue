@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUpdated } from "vue";
 import Square from "./components/Square.vue";
 import Controls from "./components/Controls.vue";
 import EndingStats from "./components/EndingStats.vue";
@@ -25,6 +25,7 @@ const squares = ref([
 let activate = ref([]);
 let nBack = ref("2");
 let faktor = ref("12");
+let sessionInProgress = ref(false);
 let numberOfRounds = ref(nBack.value * faktor.value);
 let nBackPosition = false;
 let nBackSound = false;
@@ -34,6 +35,7 @@ const testPositions = [0, 1, 0, 3, 4, 0, 4, 1, 1, 1];
 const testLetters = ["a", "b", "c", "d", "e", "f", "e", "a", "b", "a"];
 const selectedTest = ref("2");
 let showEndStat = ref(false);
+let timeInterval = ref(3000);
 
 const optionsTest = ref([
   { text: "2", value: "2" },
@@ -42,6 +44,25 @@ const optionsTest = ref([
 ]);
 
 onMounted(() => {
+  //startGame();
+});
+
+onUpdated(() => {
+  if (timeInterval.value < 2000) {
+    timeInterval.value = 2000;
+  } else if (timeInterval.value > 10000) {
+    timeInterval.value = 10000;
+  }
+
+  if (sessionInProgress.value == true) {
+    document
+      .querySelector(".positionButton")
+      .removeAttribute("disabled", false);
+    document.querySelector(".positionSound").removeAttribute("disabled", false);
+  } else {
+    document.querySelector(".positionButton").removeAttribute("disabled", true);
+    document.querySelector(".positionSound").removeAttribute("disabled", true);
+  }
   //startGame();
 });
 
@@ -98,7 +119,6 @@ function createChallenge() {
     };
     activate.value.push(obj);
   }
-  console.log(activate);
 }
 
 function resetScore() {
@@ -132,6 +152,7 @@ function nBackSoundCheck(sound) {
 function startGame(e) {
   e.target.setAttribute("disabled", true);
   gameProgression.value = -1;
+  sessionInProgress.value = true;
 
   /*if (gameProgression.value == 0) {
   }*/
@@ -149,11 +170,14 @@ function startGame(e) {
 
     gameProgression.value++;
     let currentN = activate.value[gameProgression.value];
-    squareShowingHiding(currentN);
     gameSound(currentN);
-    console.log(activate);
+
+    setTimeout(() => {
+      squareShowingHiding(currentN);
+    }, 100);
+
     count.value++;
-  }, 3000);
+  }, timeInterval.value);
 }
 
 /*function positionCheck() {
@@ -170,7 +194,7 @@ function gameSound(currentN) {
   let voices = window.speechSynthesis.getVoices();
   speech.voice = voices[1];
   speech.lang = "en";
-  speech.rate = 0.5;
+  speech.rate = 1.5;
 
   speech.text = currentN.sound;
   synth.speak(speech);
@@ -206,6 +230,7 @@ function squareShowingHiding(currentN) {
 
 function endSession(showSquare) {
   showEndStat.value = true;
+  sessionInProgress.value = false;
   clearInterval(showSquare);
   createChallenge();
 }
@@ -236,23 +261,38 @@ function writeAnswer(btn) {
           {{ count }} of
           {{ numberOfRounds }}
         </p>
-        <p>Faktor:</p>
-        <input
-          className="faktorInput"
-          :value="faktor"
-          @input="calculateTrials"
-          type="text"
-        />
-        <p>dual n back:</p>
-        <select
-          className="dualSelectInput"
-          v-model="selectedTest"
-          @input="calculateTrials"
-        >
-          <option v-for="option in optionsTest" :value="option.value">
-            {{ option.text }}
-          </option>
-        </select>
+        <div>
+          <p>
+            Interval:
+            <input
+              type="number"
+              min="500"
+              max="10000"
+              v-model="timeInterval"
+            />ms
+          </p>
+        </div>
+        <div className="faktor">
+          <p>Faktor:</p>
+          <input
+            className="faktorInput"
+            :value="faktor"
+            @input="calculateTrials"
+            type="text"
+          />
+        </div>
+        <div className="dualNBackStage">
+          <p>Dual n back:</p>
+          <select
+            className="dualSelectInput"
+            v-model="selectedTest"
+            @input="calculateTrials"
+          >
+            <option v-for="option in optionsTest" :value="option.value">
+              {{ option.text }}
+            </option>
+          </select>
+        </div>
         <div class="grid">
           <Square v-for="square in squares" :id="`square-${square.id}`" />
         </div>
@@ -287,9 +327,18 @@ function writeAnswer(btn) {
   .playground {
     width: 800px;
     margin: 0 auto;
-
+    .faktor,
+    .dualNBackStage {
+      display: flex;
+      p {
+        margin-right: 10px;
+      }
+    }
+    .dualNBackStage {
+      margin-top: 10px;
+    }
     .grid {
-      margin: 0 auto;
+      margin: 10px auto 25px auto;
       height: 650px;
       display: grid;
       grid-template-columns: auto auto auto;
@@ -298,6 +347,26 @@ function writeAnswer(btn) {
 
         &.active {
           background-color: red;
+        }
+
+        &#square-0 {
+          border-right: 0;
+        }
+
+        &#square-1 {
+          border-right: 0;
+        }
+
+        &#square-3 {
+          border-right: 0;
+          border-top: 0;
+        }
+        &#square-4 {
+          border-right: 0;
+          border-top: 0;
+        }
+        &#square-5 {
+          border-top: 0;
         }
       }
     }

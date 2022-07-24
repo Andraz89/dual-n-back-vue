@@ -7,8 +7,12 @@ const props = defineProps({
 <template>
   <div className="game-controls">
     <div class="play-buttons">
-      <button @click="$emit('answer', 'P')">P</button>
-      <button @click="$emit('answer', 'S')">S</button>
+      <button class="positionButton" disabled @click="$emit('answer', 'P')">
+        P
+      </button>
+      <button class="positionSound" disabled @click="$emit('answer', 'S')">
+        S
+      </button>
     </div>
     <button className="playButton" @click="props.startFunction($event)">
       Start Game
