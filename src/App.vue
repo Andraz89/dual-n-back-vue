@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import Square from "./components/Square.vue";
 import Controls from "./components/Controls.vue";
 import EndingStats from "./components/EndingStats.vue";
@@ -33,6 +33,7 @@ const letters = ["a", "b", "c", "d", "e", "f"];
 const testPositions = [0, 1, 0, 3, 4, 0, 4, 1, 1, 1];
 const testLetters = ["a", "b", "c", "d", "e", "f", "e", "a", "b", "a"];
 const selectedTest = ref("2");
+let showEndStat = ref(false);
 
 const optionsTest = ref([
   { text: "2", value: "2" },
@@ -81,6 +82,7 @@ function calculateTrials(e) {
 
 function createChallenge() {
   activate = ref([]);
+
   for (let i = 0; i < roundLength; i++) {
     let squareNum = Math.floor(Math.random() * 5);
     let squareLetter = Math.floor(Math.random() * 5);
@@ -97,6 +99,13 @@ function createChallenge() {
     activate.value.push(obj);
   }
   console.log(activate);
+}
+
+function resetScore() {
+  correctPosition = ref(0);
+  incorrectPosition = ref(0);
+  correctSound = ref(0);
+  incorrectSound = ref(0);
 }
 
 function nBackPositionCheck(squareNum) {
@@ -196,11 +205,14 @@ function squareShowingHiding(currentN) {
 }
 
 function endSession(showSquare) {
-  document.querySelector(".finish-popup").classList.add("display-popup");
+  showEndStat.value = true;
   clearInterval(showSquare);
+  createChallenge();
 }
 
 function closeFinishPopup() {
+  showEndStat.value = false;
+  resetScore();
   document.querySelector(".finish-popup").classList.remove("display-popup");
   document.querySelector(".playButton").removeAttribute("disabled");
   count.value = 0;
@@ -252,6 +264,7 @@ function writeAnswer(btn) {
         />
       </div>
       <EndingStats
+        v-if="showEndStat"
         :correctPosition="correctPosition"
         :incorrectPosition="incorrectPosition"
         :correctSound="correctSound"
@@ -303,7 +316,7 @@ function writeAnswer(btn) {
 .finish-popup {
   width: 100vw;
   height: 100vh;
-  display: none;
+  //display: none;
   text-align: center;
   position: absolute;
   top: 0;

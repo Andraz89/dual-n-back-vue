@@ -1,10 +1,11 @@
 <script setup>
+import { ref, watch, computed } from "vue";
 const props = defineProps({
   correctPosition: Number,
   incorrectPosition: Number,
   correctSound: Number,
   incorrectSound: Number,
-  nBack: Number,
+  nBack: String,
   closeFinishPopup: Function,
 });
 </script>
